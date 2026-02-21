@@ -14,7 +14,6 @@ namespace AccountingApp.Components
 {
     public partial class Navbar : UserControl
     {
-
         public Navbar()
         {
             InitializeComponent();
@@ -42,11 +41,6 @@ namespace AccountingApp.Components
 
         private void ChangePage_Click(object sender, EventArgs e)
         {
-            //記一筆 記一筆 = new 記一筆();
-            //var navbar = typeof(記一筆).GetField("navbar1", BindingFlags.NonPublic | BindingFlags.Instance);
-
-            //Navbar nav = (Navbar)navbar.GetValue(記一筆);
-
             Button btn = sender as Button;
 
             string page = btn.Text;

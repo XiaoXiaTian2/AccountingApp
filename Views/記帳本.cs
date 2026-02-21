@@ -1,4 +1,6 @@
-﻿using AccountingApp.Enums;
+﻿using AccountingApp.Attributes;
+using AccountingApp.Enums;
+using AccountingApp.Extensions;
 using AccountingApp.Models;
 using CSV;
 using System;
@@ -8,6 +10,7 @@ using System.Data;
 using System.Drawing;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Security.Policy;
 using System.Text;
 using System.Threading.Tasks;
@@ -18,6 +21,8 @@ namespace AccountingApp.Views
 {
     public partial class 記帳本 : Form
     {
+        //HW:嘗試重購記帳本這一頁
+        //準備１０張１０ＭＢ圖片
         private List<RecordModel> records;
 
         private string filePath = "E:/csharp_course/accounting/data/data.csv";
@@ -34,9 +39,9 @@ namespace AccountingApp.Views
             //DataGridViewColumn : 根據listModel的Property自動創建 DataGridViewTextboxColumn
             //DataGridViewRow: 根據list每一筆資料創建DataGridViewRow
             //DataGridViewCell: 根據每一筆資料的欄位，創建DataGridViewTextboxCell 進行欄位資料填充
-
-
             //dataGridView1.AutoGenerateColumns = false;
+
+
             dataGridView1.DataSource = null;
             dataGridView1.Columns.Clear();
             dataGridView1.DataSource = records = CSVHelper.Read<RecordModel>(filePath);
@@ -46,44 +51,41 @@ namespace AccountingApp.Views
 
         private void dataGridView1_CellEndEdit(object sender, DataGridViewCellEventArgs e)
         {
-            if (e.ColumnIndex == 11)
-            {
-                DataModel.Details.TryGetValue(dataGridView1.Rows[e.RowIndex].Cells[11].Value.ToString(), out List<string> details);
-
-                var detail = (DataGridViewComboBoxCell)dataGridView1.Rows[e.RowIndex].Cells[12];
-                detail.DataSource = details;
-                detail.Value = details[0];
-            }
-
             if (File.Exists(filePath))
             {
                 File.Delete(filePath);
                 FileStream stream = File.Create(filePath);
                 stream.Close();
-
             }
 
-            switch (e.ColumnIndex)
+            var column = dataGridView1.Columns[e.ColumnIndex];
+            string propertyName = column.Tag.ToString();
+
+            var record = records[e.RowIndex];
+            var prop = record.GetType().GetProperty(propertyName);
+            if (prop != null && prop.CanWrite)
             {
-                case 8:
-                    records[e.RowIndex].Date = dataGridView1.Rows[e.RowIndex].Cells[e.ColumnIndex].Value.ToString();
-                    break;
-                case 9:
-                    records[e.RowIndex].Money = dataGridView1.Rows[e.RowIndex].Cells[e.ColumnIndex].Value.ToString();
-                    break;
-                case 10:
-                    records[e.RowIndex].Member = dataGridView1.Rows[e.RowIndex].Cells[e.ColumnIndex].Value.ToString();
-                    break;
-                case 11:
-                    records[e.RowIndex].Category = dataGridView1.Rows[e.RowIndex].Cells[e.ColumnIndex].Value.ToString();
-                    break;
-                case 12:
-                    records[e.RowIndex].Detail = dataGridView1.Rows[e.RowIndex].Cells[e.ColumnIndex].Value.ToString();
-                    break;
-                case 13:
-                    records[e.RowIndex].Payway = dataGridView1.Rows[e.RowIndex].Cells[e.ColumnIndex].Value.ToString();
-                    break;
+                if (
+                    dataGridView1.Rows[e.RowIndex].Cells[e.ColumnIndex] is DataGridViewComboBoxCell comboBoxCell
+                    && comboBoxCell.OwningColumn.Tag.ToString() == "Categories"
+                )
+                {
+                    DataModel.Details.TryGetValue(comboBoxCell.Value.ToString(), out List<string> details);
+
+                    var detail = (DataGridViewComboBoxCell)dataGridView1.Rows[e.RowIndex].Cells[e.ColumnIndex + 1];
+                    detail.DataSource = details;
+                    detail.Value = details[0];
+                }
+
+                var value = dataGridView1
+                            .Rows[e.RowIndex]
+                            .Cells[e.ColumnIndex]
+                            .Value?.ToString();
+
+                prop.SetValue(record, value);
             }
+
+
 
             CSVHelper.WriteList(filePath, records);
         }
@@ -103,19 +105,26 @@ namespace AccountingApp.Views
                         File.Delete(filePath);
                         FileStream stream = File.Create(filePath);
                         stream.Close();
-                        ((Bitmap)(dataGridView1.Rows[e.RowIndex].Cells[14].Value)).Dispose();
-                        ((Bitmap)(dataGridView1.Rows[e.RowIndex].Cells[15].Value)).Dispose();
-                        var img1 = records[e.RowIndex].Img1;
-                        var img2 = records[e.RowIndex].Img2;
-                        File.Delete(img1);
-                        File.Delete(img2);
+
+                        dataGridView1.Rows[e.RowIndex].Cells
+                           .OfType<DataGridViewImageCell>().ToList()
+                           .ForEach(cel =>
+                           {
+                               ((Bitmap)(cel.Value)).Dispose();
+                               var img1 = records[e.RowIndex].Img1;
+                               var img2 = records[e.RowIndex].Img2;
+                               File.Delete(img1);
+                               File.Delete(img2);
+                           });
                     }
+
                     dataGridView1.DataSource = null;
                     dataGridView1.Columns.Clear();
                     records.RemoveAt(e.RowIndex);
                     dataGridView1.DataSource = records;
                     CSVHelper.WriteList(filePath, records);
                     this.ReRender();
+
                     return;
                 }
 
@@ -135,69 +144,32 @@ namespace AccountingApp.Views
         {
             foreach (var prop in typeof(RecordModel).GetProperties())
             {
-                if (prop.Name == "Img1" || prop.Name == "Img2")
+                // 擴充方法
+                if (prop.GetCustomAttributes().Any((x) => x.GetType() == typeof(ComboBoxColumnAttribute)))
                 {
-                    var imgCol = new DataGridViewImageColumn
-                    {
-                        Name = prop.Name,
-                        HeaderText = prop.Name,
-                        ImageLayout = DataGridViewImageCellLayout.Zoom,
-                    };
-
-                    dataGridView1.Columns.Add(imgCol);
+                    DataGridViewExtension.CreateComboxColumn(dataGridView1, prop);
+                    continue;
                 }
-                else if (prop.Name == "Category")
+                if (prop.GetCustomAttributes().Any((x) => x.GetType() == typeof(ImageColumnAttribute)))
                 {
-                    dataGridView1.Columns.Add(new DataGridViewComboBoxColumn
-                    {
-                        Name = prop.Name,
-                        HeaderText = prop.Name,
-                        DataPropertyName = prop.Name,
-                        DataSource = DataModel.Details.Keys.ToList()
-                    });
+                    DataGridViewExtension.CreateImageColumn(dataGridView1, prop);
+                    continue;
                 }
-                else if (prop.Name == "Detail")
-                {
-                    dataGridView1.Columns.Add(new DataGridViewComboBoxColumn
-                    {
-                        Name = prop.Name,
-                        HeaderText = prop.Name,
-                        DataPropertyName = prop.Name,
-                        DataSource = DataModel.Details.Values.ToList()
-                    });
-                }
-                else if (prop.Name == "Member")
-                {
-                    dataGridView1.Columns.Add(new DataGridViewComboBoxColumn
-                    {
-                        Name = prop.Name,
-                        HeaderText = prop.Name,
-                        DataPropertyName = prop.Name,
-                        DataSource = DataModel.Members
-                    });
-                }
-                else if (prop.Name == "Payway")
-                {
-                    dataGridView1.Columns.Add(new DataGridViewComboBoxColumn
-                    {
-                        Name = prop.Name,
-                        HeaderText = prop.Name,
-                        DataPropertyName = prop.Name,
-                        DataSource = DataModel.Payways
-                    });
-                }
-                else
-                {
-                    dataGridView1.Columns.Add(new DataGridViewTextBoxColumn
-                    {
-                        Name = prop.Name,
-                        HeaderText = prop.Name,
-                        DataPropertyName = prop.Name
-                    });
-                }
+                DataGridViewExtension.CreateTextBoxColumn(dataGridView1, prop);
             }
 
-            // 刪除按鈕
+            var rows = dataGridView1.Rows;
+            for (int i = 0; i < rows.Count; i++)
+            {
+                DataModel.Details.TryGetValue(rows[i].Cells["Categories_ComboBox"].Value.ToString(), out List<string> detail);
+                DataGridViewComboBoxCell comboBoxCell = (DataGridViewComboBoxCell)rows[i].Cells["Details_ComboBox"];
+                comboBoxCell.DataSource = detail;
+                comboBoxCell.Value = detail[0];
+
+                rows[i].Cells["Img1_Img"].Value = ImageSet(rows[i].Cells["Img1"].Value?.ToString());
+                rows[i].Cells["Img2_Img"].Value = ImageSet(rows[i].Cells["Img2"].Value?.ToString());
+            }
+
             string imgPath = Path.Combine(
                 AppDomain.CurrentDomain.BaseDirectory,
                 "Image",
@@ -212,26 +184,6 @@ namespace AccountingApp.Views
                 ImageLayout = DataGridViewImageCellLayout.Zoom,
             };
             dataGridView1.Columns.Add(deleteColumn);
-
-            for (int i = 0; i < 8; i++)
-            {
-                dataGridView1.Columns[i].Visible = false;
-            }
-            var rows = dataGridView1.Rows;
-            for (int i = 0; i < rows.Count; i++)
-            {
-                DataModel.Details.TryGetValue(rows[i].Cells[11].Value.ToString(), out List<string> detail);
-                rows[i].Cells[12] = new DataGridViewComboBoxCell()
-                {
-                    DataSource = detail
-                };
-                rows[i].Cells[10].Value = rows[i].Cells[2].Value;
-                rows[i].Cells[11].Value = rows[i].Cells[3].Value;
-                rows[i].Cells[12].Value = rows[i].Cells[4].Value;
-                rows[i].Cells[14].Value = Image.FromFile(rows[i].Cells[6].Value?.ToString());
-                rows[i].Cells[15].Value = Image.FromFile(rows[i].Cells[7].Value?.ToString());
-            }
-
         }
 
         private void CommitData(object sender, EventArgs e)
@@ -241,6 +193,11 @@ namespace AccountingApp.Views
             {
                 dgw.CommitEdit(DataGridViewDataErrorContexts.Commit);
             }
+        }
+
+        private Bitmap ImageSet(string path)
+        {
+            return new Bitmap(new MemoryStream(File.ReadAllBytes(path)));
         }
     }
 }

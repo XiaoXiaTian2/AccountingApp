@@ -49,6 +49,8 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Attributes\ImageColumnAttribute.cs" />
+    <Compile Include="Attributes\ComboBoxColumnAttribute.cs" />
     <Compile Include="Components\Navbar.cs">
       <SubType>UserControl</SubType>
     </Compile>
@@ -58,9 +60,9 @@
     <Compile Include="Enums\Category.cs" />
     <Compile Include="Enums\Member.cs" />
     <Compile Include="Enums\Payway.cs" />
+    <Compile Include="Extensions\DataGridViewExtension.cs" />
     <Compile Include="Models\DataModel.cs" />
     <Compile Include="Models\RecordModel.cs" />
-    <Compile Include="Student.cs" />
     <Compile Include="Views\ImageForm.cs">
       <SubType>Form</SubType>
     </Compile>

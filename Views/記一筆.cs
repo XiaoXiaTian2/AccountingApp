@@ -41,6 +41,11 @@ namespace AccountingApp.Views
 
         private void accounting_Click(object sender, EventArgs e)
         {
+
+            //HW:
+            //1. 研究 Dispose 方法具體如何使用? 以及 GC.Collect() 強迫記憶體回收
+            //2. 在每一次圖片上船完成之後都要回收記憶體 確保記憶體都是能回到最初的樣子
+
             //迅雷下載:支援邊播放邊下載(轉乘Byte)
             //PPS:緩衝進度條 (Buffer)
 
@@ -77,10 +82,10 @@ namespace AccountingApp.Views
             {
                 Date = dateTimePicker1.Value.ToString("yyyy-MM-dd"),
                 Money = money.Text,
-                Category = category.Text,
-                Detail = detail.Text,
-                Member = member.Text,
-                Payway = payway.Text,
+                Categories = category.Text,
+                Details = detail.Text,
+                Members = member.Text,
+                Payways = payway.Text,
                 Img1 = path1,
                 Img2 = path2,
             };
@@ -107,7 +112,7 @@ namespace AccountingApp.Views
         private void pictureBox1_Click(object sender, EventArgs e)
         {
             OpenFileDialog openFileDialog = new OpenFileDialog();
-            openFileDialog.Filter = "圖片|*.png";
+            openFileDialog.Filter = "圖片|*.png;*.jpg";
             DialogResult dialogResult = openFileDialog.ShowDialog();
             if (dialogResult == DialogResult.OK)
             {

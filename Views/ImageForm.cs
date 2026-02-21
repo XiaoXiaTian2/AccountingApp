@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
 using System.Drawing;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -15,8 +16,10 @@ namespace AccountingApp.Views
         public ImageForm(string imgPath)
         {
             InitializeComponent();
-
-            this.pictureBox1.Image = Image.FromFile(imgPath);
+            //Image.FromFile(imgPath);
+            this.pictureBox1.Image = new Bitmap(new MemoryStream(File.ReadAllBytes(imgPath)));
+            //new Bitmap(new FileStream(imgPath, FileMode.Open));
+            //this.pictureBox1.Image = Image.FromFile(imgPath);
         }
     }
 }

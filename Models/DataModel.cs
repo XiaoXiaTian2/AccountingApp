@@ -9,10 +9,14 @@ namespace AccountingApp.Models
 {
     internal class DataModel
     {
-        //public static List<string> Categories = new List<string>()
-        //{
-        //    "食", "住", "行", "樂", "生活"
-        //};
+        public static List<string> Categories = new List<string>()
+        {
+            Category.Food.ToString(),
+            Category.Live.ToString(),
+            Category.Move.ToString(),
+            Category.Entirement.ToString(),
+            Category.Life.ToString()
+        };
 
         public static Dictionary<string, List<string>> Details = new Dictionary<string, List<string>>()
         {
