@@ -16,10 +16,16 @@ namespace AccountingApp.Views
         public ImageForm(string imgPath)
         {
             InitializeComponent();
-            //Image.FromFile(imgPath);
             this.pictureBox1.Image = new Bitmap(new MemoryStream(File.ReadAllBytes(imgPath)));
+            //Image.FromFile(imgPath);
             //new Bitmap(new FileStream(imgPath, FileMode.Open));
             //this.pictureBox1.Image = Image.FromFile(imgPath);
+            this.FormClosing += ImageForm_FormClosing;
+        }
+
+        private void ImageForm_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            this.pictureBox1.Image.Dispose();
         }
     }
 }

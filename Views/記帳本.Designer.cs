@@ -31,6 +31,8 @@
             this.dataGridView1 = new System.Windows.Forms.DataGridView();
             this.button1 = new System.Windows.Forms.Button();
             this.navbar1 = new AccountingApp.Components.Navbar();
+            this.start_time = new System.Windows.Forms.DateTimePicker();
+            this.end_time = new System.Windows.Forms.DateTimePicker();
             ((System.ComponentModel.ISupportInitialize)(this.dataGridView1)).BeginInit();
             this.SuspendLayout();
             // 
@@ -65,11 +67,27 @@
             this.navbar1.Size = new System.Drawing.Size(1149, 94);
             this.navbar1.TabIndex = 1;
             // 
+            // start_time
+            // 
+            this.start_time.Location = new System.Drawing.Point(494, 18);
+            this.start_time.Name = "start_time";
+            this.start_time.Size = new System.Drawing.Size(200, 25);
+            this.start_time.TabIndex = 4;
+            // 
+            // end_time
+            // 
+            this.end_time.Location = new System.Drawing.Point(778, 18);
+            this.end_time.Name = "end_time";
+            this.end_time.Size = new System.Drawing.Size(200, 25);
+            this.end_time.TabIndex = 5;
+            // 
             // 記帳本
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 15F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1149, 525);
+            this.Controls.Add(this.end_time);
+            this.Controls.Add(this.start_time);
             this.Controls.Add(this.button1);
             this.Controls.Add(this.dataGridView1);
             this.Controls.Add(this.navbar1);
@@ -85,6 +103,8 @@
         private Components.Navbar navbar1;
         private System.Windows.Forms.DataGridView dataGridView1;
         private System.Windows.Forms.Button button1;
+        private System.Windows.Forms.DateTimePicker start_time;
+        private System.Windows.Forms.DateTimePicker end_time;
     }
 }
 

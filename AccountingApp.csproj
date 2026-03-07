@@ -63,6 +63,9 @@
     <Compile Include="Extensions\DataGridViewExtension.cs" />
     <Compile Include="Models\DataModel.cs" />
     <Compile Include="Models\RecordModel.cs" />
+    <Compile Include="Utility\AcoountingTargetHelper.cs" />
+    <Compile Include="Utility\FormExtension.cs" />
+    <Compile Include="Utility\ImgCompressor.cs" />
     <Compile Include="Views\ImageForm.cs">
       <SubType>Form</SubType>
     </Compile>

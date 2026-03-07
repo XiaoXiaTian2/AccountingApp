@@ -36,6 +36,7 @@ namespace AccountingApp.Extensions
             dataGridView.Columns.Add(new DataGridViewImageColumn
             {
                 Name = $"{prop.Name}_Img",
+                Tag = prop.Name,
                 HeaderText = prop.GetCustomAttribute<DisplayNameAttribute>()?.DisplayName?.ToString(),
                 ImageLayout = DataGridViewImageCellLayout.Zoom,
             });
@@ -47,6 +48,7 @@ namespace AccountingApp.Extensions
             dataGridView.Columns.Add(new DataGridViewTextBoxColumn
             {
                 Name = prop.Name,
+                Tag = prop.Name,
                 HeaderText = prop.GetCustomAttribute<DisplayNameAttribute>()?.DisplayName?.ToString(),
                 DataPropertyName = prop.Name
             });

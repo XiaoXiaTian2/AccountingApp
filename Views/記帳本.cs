@@ -2,6 +2,7 @@
 using AccountingApp.Enums;
 using AccountingApp.Extensions;
 using AccountingApp.Models;
+using AccountingApp.Utility;
 using CSV;
 using System;
 using System.Collections.Generic;
@@ -21,11 +22,8 @@ namespace AccountingApp.Views
 {
     public partial class 記帳本 : Form
     {
-        //HW:嘗試重購記帳本這一頁
-        //準備１０張１０ＭＢ圖片
         private List<RecordModel> records;
 
-        private string filePath = "E:/csharp_course/accounting/data/data.csv";
         public 記帳本()
         {
             InitializeComponent();
@@ -41,16 +39,44 @@ namespace AccountingApp.Views
             //DataGridViewCell: 根據每一筆資料的欄位，創建DataGridViewTextboxCell 進行欄位資料填充
             //dataGridView1.AutoGenerateColumns = false;
 
+            this.DebounceClick<int>((num) =>
+            {
+                var rows = dataGridView1.Rows;
+                for (int i = 0; i < rows.Count; i++)
+                {
+                    ((Bitmap)(rows[i].Cells["Img1_Img"].Value)).Dispose();
+                    ((Bitmap)(rows[i].Cells["Img2_Img"].Value)).Dispose();
+                }
 
-            dataGridView1.DataSource = null;
-            dataGridView1.Columns.Clear();
-            dataGridView1.DataSource = records = CSVHelper.Read<RecordModel>(filePath);
+                dataGridView1.DataSource = null;
+                dataGridView1.Columns.Clear();
+                var diff = end_time.Value - start_time.Value;
+                records = new List<RecordModel>();
+                for (int i = 0; i <= diff.Days; i++)
+                {
+                    string basePath = AcoountingTargetHelper.GetAccountingFolder(start_time.Value.AddDays(i));
+                    //var day = start_time.Value.AddDays(i).ToString("yyyyMMdd");
+                    string filePath = $"{basePath}/data/data.csv";
+                    if (File.Exists(filePath))
+                    {
+                        records.AddRange(CSVHelper.Read<RecordModel>(filePath));
+                    }
+                }
+                dataGridView1.DataSource = records;
 
-            this.ReRender();
+                this.ReRender();
+            }, 2, 400);
+
+            // HW: 各一張 1 MB / small_40 *40 
         }
 
         private void dataGridView1_CellEndEdit(object sender, DataGridViewCellEventArgs e)
         {
+            var column = dataGridView1.Columns[e.ColumnIndex];
+            string date = records[e.RowIndex].Date.Replace("-", "");
+
+            string basePath = "E:/csharp_course/accounting";
+            string filePath = $"{basePath}/{date}/data/data.csv";
             if (File.Exists(filePath))
             {
                 File.Delete(filePath);
@@ -58,7 +84,6 @@ namespace AccountingApp.Views
                 stream.Close();
             }
 
-            var column = dataGridView1.Columns[e.ColumnIndex];
             string propertyName = column.Tag.ToString();
 
             var record = records[e.RowIndex];
@@ -85,8 +110,6 @@ namespace AccountingApp.Views
                 prop.SetValue(record, value);
             }
 
-
-
             CSVHelper.WriteList(filePath, records);
         }
 
@@ -100,6 +123,11 @@ namespace AccountingApp.Views
             {
                 if (dataGridView1.Columns[e.ColumnIndex].Tag?.ToString() == "刪除")
                 {
+                    var column = dataGridView1.Columns[e.ColumnIndex];
+                    string date = records[e.RowIndex].Date.Replace("-", "");
+
+                    string basePath = "E:/csharp_course/accounting";
+                    string filePath = $"{basePath}/{date}/data/data.csv";
                     if (File.Exists(filePath))
                     {
                         File.Delete(filePath);
@@ -134,8 +162,9 @@ namespace AccountingApp.Views
                     this.Width = this.Height = 800;
                     this.StartPosition = FormStartPosition.CenterScreen;
 
-                    var picForm = new ImageForm(dataGridView1.Rows[e.RowIndex].Cells[e.ColumnIndex - 8].Value.ToString());
-                    picForm.Show();
+                    string path = dataGridView1.Rows[e.RowIndex].Cells[e.ColumnIndex - 8].Value.ToString().Replace("small_", "");
+                    var picForm = new ImageForm(path);
+                    picForm.ShowDialog();
                 }
             }
         }
@@ -168,6 +197,8 @@ namespace AccountingApp.Views
 
                 rows[i].Cells["Img1_Img"].Value = ImageSet(rows[i].Cells["Img1"].Value?.ToString());
                 rows[i].Cells["Img2_Img"].Value = ImageSet(rows[i].Cells["Img2"].Value?.ToString());
+                ////((Bitmap)(rows[i].Cells["Img1_Img"].Value)).Dispose();
+                ////((Bitmap)(rows[i].Cells["Img2_Img"].Value)).Dispose();
             }
 
             string imgPath = Path.Combine(
@@ -175,15 +206,24 @@ namespace AccountingApp.Views
                 "Image",
                 "delete.png"
             );
+
+            Image img;
+            using (var bmpTemp = new Bitmap(imgPath))
+            {
+                img = new Bitmap(bmpTemp);
+            }
             var deleteColumn = new DataGridViewImageColumn
             {
                 Name = "刪除",
                 Tag = "刪除",
                 HeaderText = "刪除",
-                Image = Image.FromFile(imgPath),
+                Image = img,
                 ImageLayout = DataGridViewImageCellLayout.Zoom,
             };
+
             dataGridView1.Columns.Add(deleteColumn);
+
+            GC.Collect();
         }
 
         private void CommitData(object sender, EventArgs e)
