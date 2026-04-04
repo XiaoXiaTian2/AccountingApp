@@ -33,6 +33,9 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="AutoMapper, Version=10.0.0.0, Culture=neutral, PublicKeyToken=be96cd2c38ef1005, processorArchitecture=MSIL">
+      <HintPath>packages\AutoMapper.10.0.0\lib\net461\AutoMapper.dll</HintPath>
+    </Reference>
     <Reference Include="CSV">
       <HintPath>..\CSV\bin\Debug\CSV.dll</HintPath>
     </Reference>
@@ -57,12 +60,25 @@
     <Compile Include="Components\Navbar.Designer.cs">
       <DependentUpon>Navbar.cs</DependentUpon>
     </Compile>
+    <Compile Include="Contracts\RecordBookContract.cs" />
+    <Compile Include="Contracts\AddRecordContract.cs" />
     <Compile Include="Enums\Category.cs" />
     <Compile Include="Enums\Member.cs" />
     <Compile Include="Enums\Payway.cs" />
     <Compile Include="Extensions\DataGridViewExtension.cs" />
+    <Compile Include="Models\DAOs\ComboxDataDAO.cs" />
+    <Compile Include="Models\DAOs\RecordModelDAO.cs" />
     <Compile Include="Models\DataModel.cs" />
+    <Compile Include="Models\DTOs\ComboxDataDTO.cs" />
+    <Compile Include="Models\DTOs\AccountBookDTO.cs" />
+    <Compile Include="Models\DTOs\RecordModelDTO.cs" />
     <Compile Include="Models\RecordModel.cs" />
+    <Compile Include="Models\Repositories\DataRepository.cs" />
+    <Compile Include="Models\Repositories\IDataRepository.cs" />
+    <Compile Include="Models\Repositories\RecordRepository.cs" />
+    <Compile Include="Models\Repositories\IRecordRepository.cs" />
+    <Compile Include="Presenters\RecordBookPresenter.cs" />
+    <Compile Include="Presenters\AddAccountPresenter.cs" />
     <Compile Include="Utility\AcoountingTargetHelper.cs" />
     <Compile Include="Utility\FormExtension.cs" />
     <Compile Include="Utility\ImgCompressor.cs" />
@@ -126,6 +142,7 @@
     <EmbeddedResource Include="Views\記帳本.resx">
       <DependentUpon>記帳本.cs</DependentUpon>
     </EmbeddedResource>
+    <None Include="packages.config" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
@@ -139,7 +156,9 @@
   <ItemGroup>
     <None Include="App.config" />
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <Folder Include="Mappings\" />
+  </ItemGroup>
   <ItemGroup>
     <Content Include="Image\delete.png" />
     <Content Include="Image\upload.png">

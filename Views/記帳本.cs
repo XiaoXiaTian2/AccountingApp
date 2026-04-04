@@ -2,6 +2,9 @@
 using AccountingApp.Enums;
 using AccountingApp.Extensions;
 using AccountingApp.Models;
+using AccountingApp.Models.DAOs;
+using AccountingApp.Models.DTOs;
+using AccountingApp.Presenters;
 using AccountingApp.Utility;
 using CSV;
 using System;
@@ -16,13 +19,17 @@ using System.Security.Policy;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using static AccountingApp.Contracts.AddRecordContract;
+using static AccountingApp.Contracts.RecordBookContract;
 using static System.Windows.Forms.VisualStyles.VisualStyleElement.ListView;
 
 namespace AccountingApp.Views
 {
-    public partial class 記帳本 : Form
+    public partial class 記帳本 : Form, IRecordBookView
     {
         private List<RecordModel> records;
+
+        IRecordBookPresenter presenter;
 
         public 記帳本()
         {
@@ -41,76 +48,30 @@ namespace AccountingApp.Views
 
             this.DebounceClick<int>((num) =>
             {
-                var rows = dataGridView1.Rows;
-                for (int i = 0; i < rows.Count; i++)
-                {
-                    ((Bitmap)(rows[i].Cells["Img1_Img"].Value)).Dispose();
-                    ((Bitmap)(rows[i].Cells["Img2_Img"].Value)).Dispose();
-                }
+                presenter = new ReordBookPresenter(this);
+                presenter.GetRecords(start_time.Value, end_time.Value);
 
-                dataGridView1.DataSource = null;
                 dataGridView1.Columns.Clear();
-                var diff = end_time.Value - start_time.Value;
-                records = new List<RecordModel>();
-                for (int i = 0; i <= diff.Days; i++)
-                {
-                    string basePath = AcoountingTargetHelper.GetAccountingFolder(start_time.Value.AddDays(i));
-                    //var day = start_time.Value.AddDays(i).ToString("yyyyMMdd");
-                    string filePath = $"{basePath}/data/data.csv";
-                    if (File.Exists(filePath))
-                    {
-                        records.AddRange(CSVHelper.Read<RecordModel>(filePath));
-                    }
-                }
                 dataGridView1.DataSource = records;
 
                 this.ReRender();
             }, 2, 400);
-
-            // HW: 各一張 1 MB / small_40 *40 
         }
 
         private void dataGridView1_CellEndEdit(object sender, DataGridViewCellEventArgs e)
         {
-            var column = dataGridView1.Columns[e.ColumnIndex];
-            string date = records[e.RowIndex].Date.Replace("-", "");
-
-            string basePath = "E:/csharp_course/accounting";
-            string filePath = $"{basePath}/{date}/data/data.csv";
-            if (File.Exists(filePath))
-            {
-                File.Delete(filePath);
-                FileStream stream = File.Create(filePath);
-                stream.Close();
-            }
-
-            string propertyName = column.Tag.ToString();
-
             var record = records[e.RowIndex];
-            var prop = record.GetType().GetProperty(propertyName);
-            if (prop != null && prop.CanWrite)
+            presenter.EditRecords(new AccountBookDTO()
             {
-                if (
-                    dataGridView1.Rows[e.RowIndex].Cells[e.ColumnIndex] is DataGridViewComboBoxCell comboBoxCell
-                    && comboBoxCell.OwningColumn.Tag.ToString() == "Categories"
-                )
-                {
-                    DataModel.Details.TryGetValue(comboBoxCell.Value.ToString(), out List<string> details);
-
-                    var detail = (DataGridViewComboBoxCell)dataGridView1.Rows[e.RowIndex].Cells[e.ColumnIndex + 1];
-                    detail.DataSource = details;
-                    detail.Value = details[0];
-                }
-
-                var value = dataGridView1
-                            .Rows[e.RowIndex]
-                            .Cells[e.ColumnIndex]
-                            .Value?.ToString();
-
-                prop.SetValue(record, value);
-            }
-
-            CSVHelper.WriteList(filePath, records);
+                Date = record.Date,
+                Money = record.Money,
+                Categories = record.Categories,
+                Details = record.Details,
+                Members = record.Members,
+                Payways = record.Payways,
+                Img1 = record.Img1,
+                Img2 = record.Img2,
+            });
         }
 
         private void dataGridView1_CellDoubleClick(object sender, DataGridViewCellEventArgs e)
@@ -123,34 +84,24 @@ namespace AccountingApp.Views
             {
                 if (dataGridView1.Columns[e.ColumnIndex].Tag?.ToString() == "刪除")
                 {
-                    var column = dataGridView1.Columns[e.ColumnIndex];
-                    string date = records[e.RowIndex].Date.Replace("-", "");
+                    var record = records[e.RowIndex];
 
-                    string basePath = "E:/csharp_course/accounting";
-                    string filePath = $"{basePath}/{date}/data/data.csv";
-                    if (File.Exists(filePath))
+                    dataGridView1.Rows[e.RowIndex].Cells
+                       .OfType<DataGridViewImageCell>().ToList()
+                       .ForEach(cel => ((Bitmap)(cel.Value)).Dispose());
+
+                    presenter.DeleteAccount(new AccountBookDTO()
                     {
-                        File.Delete(filePath);
-                        FileStream stream = File.Create(filePath);
-                        stream.Close();
+                        Date = record.Date,
+                        Money = record.Money,
+                        Categories = record.Categories,
+                        Details = record.Details,
+                        Members = record.Members,
+                        Payways = record.Payways,
+                        Img1 = record.Img1,
+                        Img2 = record.Img2,
+                    });
 
-                        dataGridView1.Rows[e.RowIndex].Cells
-                           .OfType<DataGridViewImageCell>().ToList()
-                           .ForEach(cel =>
-                           {
-                               ((Bitmap)(cel.Value)).Dispose();
-                               var img1 = records[e.RowIndex].Img1;
-                               var img2 = records[e.RowIndex].Img2;
-                               File.Delete(img1);
-                               File.Delete(img2);
-                           });
-                    }
-
-                    dataGridView1.DataSource = null;
-                    dataGridView1.Columns.Clear();
-                    records.RemoveAt(e.RowIndex);
-                    dataGridView1.DataSource = records;
-                    CSVHelper.WriteList(filePath, records);
                     this.ReRender();
 
                     return;
@@ -197,8 +148,6 @@ namespace AccountingApp.Views
 
                 rows[i].Cells["Img1_Img"].Value = ImageSet(rows[i].Cells["Img1"].Value?.ToString());
                 rows[i].Cells["Img2_Img"].Value = ImageSet(rows[i].Cells["Img2"].Value?.ToString());
-                ////((Bitmap)(rows[i].Cells["Img1_Img"].Value)).Dispose();
-                ////((Bitmap)(rows[i].Cells["Img2_Img"].Value)).Dispose();
             }
 
             string imgPath = Path.Combine(
@@ -206,7 +155,6 @@ namespace AccountingApp.Views
                 "Image",
                 "delete.png"
             );
-
             Image img;
             using (var bmpTemp = new Bitmap(imgPath))
             {
@@ -225,6 +173,51 @@ namespace AccountingApp.Views
 
             GC.Collect();
         }
+
+        public void OnGetRecords(List<AccountBookDTO> accountBookDTOs)
+        {
+            records = new List<RecordModel>();
+            foreach (var record in accountBookDTOs)
+            {
+                records.Add(new RecordModel()
+                {
+                    Date = record.Date,
+                    Money = record.Money.ToString(),
+                    Members = record.Members,
+                    Payways = record.Payways,
+                    Categories = record.Categories,
+                    Details = record.Details,
+                    Img1 = record.Img1,
+                    Img2 = record.Img2,
+                });
+            }
+        }
+
+        public void OnEditRecords(AccountBookDTO accountBookDTO)
+        {
+            //
+        }
+
+        public void OnDeleteAccount(List<AccountBookDTO> dtos)
+        {
+            List<RecordModel> recs = new List<RecordModel>();
+            foreach (AccountBookDTO dto in dtos)
+            {
+                recs.Add(new RecordModel()
+                {
+                    Date = dto.Date,
+                    Money = dto.Money,
+                    Members = dto.Members,
+                    Payways = dto.Payways,
+                    Categories = dto.Categories,
+                    Details = dto.Details,
+                });
+            }
+            dataGridView1.Columns.Clear();
+            dataGridView1.DataSource = records = recs;
+        }
+
+        /*------*/
 
         private void CommitData(object sender, EventArgs e)
         {

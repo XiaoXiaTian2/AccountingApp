@@ -1,5 +1,7 @@
 ﻿using AccountingApp.Enums;
 using AccountingApp.Models;
+using AccountingApp.Models.DTOs;
+using AccountingApp.Presenters;
 using AccountingApp.Utility;
 using CSV;
 using System;
@@ -15,35 +17,23 @@ using System.Security.Policy;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using static AccountingApp.Contracts.AddRecordContract;
 using static System.Windows.Forms.VisualStyles.VisualStyleElement;
 using static System.Windows.Forms.VisualStyles.VisualStyleElement.ListView;
 
 namespace AccountingApp.Views
 {
-    public partial class 記一筆 : Form
+    public partial class 記一筆 : Form, IAddRecordView
     {
+        IAddRecordPresenter presenter;
+
         public 記一筆()
         {
             InitializeComponent();
-            category.DataSource = DataModel.Details.Keys.ToList();
-            category.SelectedIndex = -1;
-            category.SelectedIndexChanged += (s, e) =>
-            {
-                var selectedCategory = category.SelectedItem.ToString();
-                detail.DataSource = DataModel.Details[selectedCategory];
-            };
-            member.DataSource = DataModel.Members;
-            payway.DataSource = DataModel.Payways;
 
-            //Image uploadImage;
+            presenter = new AddAccountPresenter(this);
+            presenter.GetComboxDataDTO();
 
-            //using (var bmpTemp = new Bitmap(@"image/upload.png"))
-            //{
-            //    uploadImage = new Bitmap(bmpTemp);
-            //}
-
-            //pictureBox1.Image = uploadImage;
-            //pictureBox2.Image = uploadImage;
             pictureBox1.Image = Image.FromFile(@"image/upload.png");
             pictureBox1.SizeMode = PictureBoxSizeMode.Zoom;
 
@@ -51,97 +41,22 @@ namespace AccountingApp.Views
             pictureBox2.SizeMode = PictureBoxSizeMode.Zoom;
         }
 
-        private void accounting_Click(object sender, EventArgs e)
+        public void OnGetComboxDataDTO(ComboxDataDTO comboxDataDTO)
         {
-            //HW:
-            //1. 研究 Dispose 方法具體如何使用? 以及 GC.Collect() 強迫記憶體回收
-            //2. 在每一次圖片上船完成之後都要回收記憶體 確保記憶體都是能回到最初的樣子
-
-            //迅雷下載:支援邊播放邊下載(轉乘Byte)
-            //PPS:緩衝進度條 (Buffer)
-
-            //P2P:點對點傳輸 => 沒有server , client <-> client
-            //BT種子:將檔案切碎 平行處理下載來自不同 client 的資料
-
-            //streaming 串流(m3u8): 將檔案再次切碎，再做下載
-            if (!File.Exists("data.csv"))
+            category.DataSource = comboxDataDTO.Details.Keys.ToList();
+            category.SelectedIndex = -1;
+            category.SelectedIndexChanged += (s, e) =>
             {
-                FileStream stream = File.Create("data.csv");
-                stream.Close();
-            }
-
-            //StreamReader reader = new StreamReader("data.csv");
-            //bool writeHeader = true;
-            //while (!reader.EndOfStream)
-            //{
-            //    string line = reader.ReadLine();
-            //    if (line.Contains("日期"))
-            //        writeHeader = false;
-            //}
-            //reader.Close();
-
-            string baseFolder = AcoountingTargetHelper.GetAccountingFolder(dateTimePicker1.Value);
-            string imgFolder = $"{baseFolder}\\img";
-            if (!Directory.Exists(imgFolder))
-                Directory.CreateDirectory(imgFolder);
-            string img1 = Guid.NewGuid().ToString();
-            string img2 = Guid.NewGuid().ToString();
-            string path1 = Path.Combine(imgFolder, $"small_{img1}.jpg"); // 40*40
-            string path3 = Path.Combine(imgFolder, $"{img1}.jpg");
-
-            string path2 = Path.Combine(imgFolder, $"small_{img2}.jpg");
-            string path4 = Path.Combine(imgFolder, $"{img2}.jpg");
-
-            //pictureBox1.Image.Save(path1);
-            //pictureBox2.Image.Save(path2);
-            using (Image thumb1 = ImgCompressor.ResizeImage(pictureBox1.Image, 40, 40))
-            {
-                thumb1.Save(path1);
-            }
-            using (Image compress1 = ImgCompressor.GetCompressedImage(pictureBox1.Image))
-            {
-                compress1.Save(path3);
-            }
-
-            using (Image thumb2 = ImgCompressor.ResizeImage(pictureBox2.Image, 40, 40))
-            {
-                thumb2.Save(path2);
-            }
-            using (Image compress2 = ImgCompressor.GetCompressedImage(pictureBox2.Image))
-            {
-                compress2.Save(path4);
-            }
-
-            RecordModel data = new RecordModel()
-            {
-                Date = dateTimePicker1.Value.ToString("yyyy-MM-dd"),
-                Money = money.Text,
-                Categories = category.Text,
-                Details = detail.Text,
-                Members = member.Text,
-                Payways = payway.Text,
-                Img1 = path1,
-                Img2 = path2,
+                var selectedCategory = category.SelectedItem.ToString();
+                detail.DataSource = comboxDataDTO.Details[selectedCategory];
             };
-            CSVHelper.Write<RecordModel>($"{baseFolder}/data/data.csv", data);
-            //StreamWriter streamWriter = new StreamWriter("data.csv", true);
-            //if (writeHeader)
-            //{
-            //    streamWriter.WriteLine("日期,金額,類型,細項,對象,付款方式");
-            //}
+            member.DataSource = comboxDataDTO.Members;
+            payway.DataSource = comboxDataDTO.Payways;
+        }
 
-            //streamWriter.WriteLine(String.Join(",", strings));
-            //streamWriter.Flush();
-            //streamWriter.Close();
-
-            StreamReader reader2 = new StreamReader("data.csv");
-            while (!reader2.EndOfStream)
-            {
-                string line = reader2.ReadLine();
-                Console.WriteLine(line);
-            }
-            reader2.Close();
-
+        public bool OnRecordCreated(bool success)
+        {
+            // 初始化
             money.Text = "";
             category.Text = DataModel.Categories[0];
             DataModel.Details.TryGetValue(category.Text, out List<string> details);
@@ -153,6 +68,38 @@ namespace AccountingApp.Views
             pictureBox2.Image.Dispose();
             pictureBox2.Image = Image.FromFile(@"image/upload.png");
             GC.Collect();
+
+            MessageBox.Show(success.ToString());
+            return success;
+        }
+
+        private void accounting_Click(object sender, EventArgs e)
+        {
+            //HW:
+            //1. 研究 Dispose 方法具體如何使用? 以及 GC.Collect() 強迫記憶體回收
+            //2. 在每一次圖片上船完成之後都要回收記憶體 確保記憶體都是能回到最初的樣子
+
+            //迅雷下載:支援邊播放邊下載(轉成Byte)
+            //PPS:緩衝進度條 (Buffer)
+
+            //P2P:點對點傳輸 => 沒有server , client <-> client
+            //BT種子:將檔案切碎 平行處理下載來自不同 client 的資料
+
+            //streaming 串流(m3u8): 將檔案再次切碎，再做下載
+
+            // DTO
+            RecordModelDTO data = new RecordModelDTO()
+            {
+                Date = dateTimePicker1.Value.ToString("yyyy-MM-dd"),
+                Money = money.Text,
+                Categories = category.Text,
+                Details = detail.Text,
+                Members = member.Text,
+                Payways = payway.Text,
+                Img1 = pictureBox1.Image,
+                Img2 = pictureBox2.Image,
+            };
+            presenter.CreateRecord(data);
         }
 
         private void pictureBox1_Click(object sender, EventArgs e)
