@@ -41,6 +41,7 @@
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Windows.Forms.DataVisualization" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
@@ -60,15 +61,22 @@
     <Compile Include="Components\Navbar.Designer.cs">
       <DependentUpon>Navbar.cs</DependentUpon>
     </Compile>
+    <Compile Include="Contracts\ChartContract.cs" />
+    <Compile Include="Contracts\AnalyzeContract.cs" />
     <Compile Include="Contracts\RecordBookContract.cs" />
     <Compile Include="Contracts\AddRecordContract.cs" />
+    <Compile Include="Enums\Period.cs" />
     <Compile Include="Enums\Category.cs" />
     <Compile Include="Enums\Member.cs" />
     <Compile Include="Enums\Payway.cs" />
+    <Compile Include="Extensions\FlowLayoutPanelExtension.cs" />
     <Compile Include="Extensions\DataGridViewExtension.cs" />
+    <Compile Include="Models\AnalyzeColumnStackodel.cs" />
     <Compile Include="Models\DAOs\ComboxDataDAO.cs" />
     <Compile Include="Models\DAOs\RecordModelDAO.cs" />
     <Compile Include="Models\DataModel.cs" />
+    <Compile Include="Models\AnalyzeLineChartModel.cs" />
+    <Compile Include="Models\DTOs\AnalyzeDTO.cs" />
     <Compile Include="Models\DTOs\ComboxDataDTO.cs" />
     <Compile Include="Models\DTOs\AccountBookDTO.cs" />
     <Compile Include="Models\DTOs\RecordModelDTO.cs" />
@@ -77,8 +85,11 @@
     <Compile Include="Models\Repositories\IDataRepository.cs" />
     <Compile Include="Models\Repositories\RecordRepository.cs" />
     <Compile Include="Models\Repositories\IRecordRepository.cs" />
+    <Compile Include="Presenters\ChartPresenter.cs" />
+    <Compile Include="Presenters\AnalyzePresenter.cs" />
     <Compile Include="Presenters\RecordBookPresenter.cs" />
     <Compile Include="Presenters\AddAccountPresenter.cs" />
+    <Compile Include="Services\AnalyzeService.cs" />
     <Compile Include="Utility\AcoountingTargetHelper.cs" />
     <Compile Include="Utility\FormExtension.cs" />
     <Compile Include="Utility\ImgCompressor.cs" />

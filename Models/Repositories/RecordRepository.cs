@@ -25,7 +25,7 @@ namespace AccountingApp.Models.Repositories
 
         public List<RecordModelDAO> GetRecords(DateTime start, DateTime end)
         {
-            var diff = end - start;
+            var diff = end.Date - start.Date;
             List<RecordModelDAO> records = new List<RecordModelDAO>();
             for (int i = 0; i <= diff.Days; i++)
             {
