@@ -34,6 +34,8 @@ namespace AccountingApp.Views
             _presenter = new ChartPresenter(this);
             period.DataSource = Enum.GetNames(typeof(Enums.Period));
             period.SelectedIndex = 0;
+            chartType.DataSource = Enum.GetNames(typeof(Enums.ChartType));
+            chartType.SelectedIndex = 0;
         }
 
         private void GroupsCheckChanged(object sender, EventArgs e)
@@ -83,13 +85,27 @@ namespace AccountingApp.Views
 
         private void SendRequest(object sender, EventArgs e)
         {
-            _presenter.GetChartDataDTO(start_time.Value, end_time.Value, filters, groups, period.SelectedValue.ToString());
+            _presenter.GetChartDataDTO(start_time.Value, end_time.Value, filters, groups, period.SelectedValue.ToString(), (ChartType)Enum.Parse(typeof(ChartType), chartType.SelectedValue.ToString()));
         }
 
         // 6/1 6/2..
         public void OnGetChartDataDTO(Chart chart)
         {
+            // 先清掉並釋放上一次的圖，避免每次查詢一直往下疊
+            while (flowLayoutPanel3.Controls.Count > 0)
+                flowLayoutPanel3.Controls[0].Dispose();
             flowLayoutPanel3.Controls.Add(chart);
+        }
+
+        private void ChangePeriod(object sender, EventArgs e)
+        {
+            ComboBox comboBox = (ComboBox)sender;
+            if (comboBox.SelectedValue.ToString() == ChartType.Line.ToString())
+            {
+                period.Visible = true;
+                return;
+            }
+            period.Visible = false;
         }
     }
 }

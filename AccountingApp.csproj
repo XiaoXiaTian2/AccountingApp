@@ -55,6 +55,9 @@
   <ItemGroup>
     <Compile Include="Attributes\ImageColumnAttribute.cs" />
     <Compile Include="Attributes\ComboBoxColumnAttribute.cs" />
+    <Compile Include="Builders\StackedColumnChartBuilder.cs" />
+    <Compile Include="Builders\PieChartBuilder.cs" />
+    <Compile Include="Builders\LineChartBuilder.cs" />
     <Compile Include="Components\Navbar.cs">
       <SubType>UserControl</SubType>
     </Compile>
@@ -63,8 +66,10 @@
     </Compile>
     <Compile Include="Contracts\ChartContract.cs" />
     <Compile Include="Contracts\AnalyzeContract.cs" />
+    <Compile Include="Contracts\IChartBuilder.cs" />
     <Compile Include="Contracts\RecordBookContract.cs" />
     <Compile Include="Contracts\AddRecordContract.cs" />
+    <Compile Include="Enums\ChartType.cs" />
     <Compile Include="Enums\Period.cs" />
     <Compile Include="Enums\Category.cs" />
     <Compile Include="Enums\Member.cs" />

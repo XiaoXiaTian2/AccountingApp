@@ -1,4 +1,5 @@
-﻿using AccountingApp.Models.DTOs;
+﻿using AccountingApp.Enums;
+using AccountingApp.Models.DTOs;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -12,7 +13,7 @@ namespace AccountingApp.Contracts
     {
         public interface IChartPresenter
         {
-            void GetChartDataDTO(DateTime start, DateTime end, Dictionary<string, List<string>> filters, List<string> groups, string period);
+            void GetChartDataDTO(DateTime start, DateTime end, Dictionary<string, List<string>> filters, List<string> groups, string period, ChartType chartType);
         }
 
         public interface IChartView

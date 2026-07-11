@@ -213,35 +213,20 @@ namespace AccountingApp.Services
                     return rstart;
                 }).ToList();
 
-            var keys = datas.Select(x => x.Key.Item2).Distinct().ToList();
-            Dictionary<string, Dictionary<string, string>> finalData = new Dictionary<string, Dictionary<string, string>>();
-            // <date, <key, object>>
-            foreach (var item in datas)
-            {
-                foreach (var key in keys)
-                {
-                    finalData.Add(item.Key.Date, new Dictionary<string, string>()
-                    {
-                        {item.Key.Item2, "0"}
-                    });
-                }
-                finalData[item.Key.Date][item.Key.Item2] = item.Sum(x => int.Parse(x.Money)).ToString();
-            }
+            var groupedList = datas.ToList();
+            var keys = groupedList.Select(x => x.Key.Item2).Distinct().ToList();
+            var allDates = times.Select(t => t.Date.ToString("MM-dd")).ToList();
 
-            for (int i = 0; i < times.Count; i++)
-            {
-                string defaultDate = times[i].Date.ToString("yyyy-MM-dd");
-                if (!finalData.Any(x => x.Key == defaultDate))
-                {
-                    foreach (var key in keys)
-                    {
-                        finalData.Add(defaultDate, new Dictionary<string, string>()
-                    {
-                        {key, "0"}
-                    });
-                    }
+            // 建立 <date, <group, money>> 的完整矩形，每個日期都含所有群組，預設 0
+            Dictionary<string, Dictionary<string, string>> finalData = allDates
+                .ToDictionary(date => date, date => keys.ToDictionary(key => key, key => "0"));
 
-                }
+            // 填入各群組每日的加總
+            foreach (var group in groupedList)
+            {
+                string date = DateTime.Parse(group.Key.Item1).ToString("MM-dd");
+                if (finalData.ContainsKey(date))
+                    finalData[date][group.Key.Item2] = group.Sum(x => int.Parse(x.Money)).ToString();
             }
 
             return finalData;

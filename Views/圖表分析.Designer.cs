@@ -28,7 +28,6 @@
         /// </summary>
         private void InitializeComponent()
         {
-            this.navbar1 = new AccountingApp.Components.Navbar();
             this.end_time = new System.Windows.Forms.DateTimePicker();
             this.start_time = new System.Windows.Forms.DateTimePicker();
             this.button1 = new System.Windows.Forms.Button();
@@ -38,26 +37,20 @@
             this.flowLayoutPanel1 = new System.Windows.Forms.FlowLayoutPanel();
             this.flowLayoutPanel3 = new System.Windows.Forms.FlowLayoutPanel();
             this.period = new System.Windows.Forms.ComboBox();
+            this.chartType = new System.Windows.Forms.ComboBox();
+            this.navbar1 = new AccountingApp.Components.Navbar();
             this.SuspendLayout();
-            // 
-            // navbar1
-            // 
-            this.navbar1.Dock = System.Windows.Forms.DockStyle.Bottom;
-            this.navbar1.Location = new System.Drawing.Point(0, 607);
-            this.navbar1.Name = "navbar1";
-            this.navbar1.Size = new System.Drawing.Size(1093, 94);
-            this.navbar1.TabIndex = 1;
             // 
             // end_time
             // 
-            this.end_time.Location = new System.Drawing.Point(459, 16);
+            this.end_time.Location = new System.Drawing.Point(386, 20);
             this.end_time.Name = "end_time";
             this.end_time.Size = new System.Drawing.Size(200, 25);
             this.end_time.TabIndex = 11;
             // 
             // start_time
             // 
-            this.start_time.Location = new System.Drawing.Point(180, 18);
+            this.start_time.Location = new System.Drawing.Point(91, 20);
             this.start_time.Name = "start_time";
             this.start_time.Size = new System.Drawing.Size(200, 25);
             this.start_time.TabIndex = 10;
@@ -103,29 +96,47 @@
             this.flowLayoutPanel1.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.flowLayoutPanel1.Location = new System.Drawing.Point(37, 82);
             this.flowLayoutPanel1.Name = "flowLayoutPanel1";
-            this.flowLayoutPanel1.Size = new System.Drawing.Size(651, 138);
+            this.flowLayoutPanel1.Size = new System.Drawing.Size(648, 138);
             this.flowLayoutPanel1.TabIndex = 13;
             // 
             // flowLayoutPanel3
             // 
             this.flowLayoutPanel3.Location = new System.Drawing.Point(697, 82);
             this.flowLayoutPanel3.Name = "flowLayoutPanel3";
-            this.flowLayoutPanel3.Size = new System.Drawing.Size(396, 507);
+            this.flowLayoutPanel3.Size = new System.Drawing.Size(448, 507);
             this.flowLayoutPanel3.TabIndex = 16;
             // 
             // period
             // 
             this.period.FormattingEnabled = true;
-            this.period.Location = new System.Drawing.Point(742, 18);
+            this.period.Location = new System.Drawing.Point(638, 20);
             this.period.Name = "period";
             this.period.Size = new System.Drawing.Size(132, 23);
             this.period.TabIndex = 17;
+            // 
+            // chartType
+            // 
+            this.chartType.FormattingEnabled = true;
+            this.chartType.Location = new System.Drawing.Point(804, 20);
+            this.chartType.Name = "chartType";
+            this.chartType.Size = new System.Drawing.Size(132, 23);
+            this.chartType.TabIndex = 17;
+            this.chartType.SelectedValueChanged += new System.EventHandler(this.ChangePeriod);
+            // 
+            // navbar1
+            // 
+            this.navbar1.Dock = System.Windows.Forms.DockStyle.Bottom;
+            this.navbar1.Location = new System.Drawing.Point(0, 607);
+            this.navbar1.Name = "navbar1";
+            this.navbar1.Size = new System.Drawing.Size(1157, 94);
+            this.navbar1.TabIndex = 1;
             // 
             // 圖表分析
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 15F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(1093, 701);
+            this.ClientSize = new System.Drawing.Size(1157, 701);
+            this.Controls.Add(this.chartType);
             this.Controls.Add(this.period);
             this.Controls.Add(this.flowLayoutPanel3);
             this.Controls.Add(this.label2);
@@ -155,5 +166,6 @@
         private System.Windows.Forms.FlowLayoutPanel flowLayoutPanel1;
         private System.Windows.Forms.FlowLayoutPanel flowLayoutPanel3;
         private System.Windows.Forms.ComboBox period;
+        private System.Windows.Forms.ComboBox chartType;
     }
 }
