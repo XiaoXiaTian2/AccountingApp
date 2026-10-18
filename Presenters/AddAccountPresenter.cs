@@ -17,7 +17,7 @@ namespace AccountingApp.Presenters
 {
     internal class AddAccountPresenter : IAddRecordPresenter
     {
-        private static string baseFolder = @"E:\csharp_course\accounting";
+        private static string baseFolder = AcoountingTargetHelper.BaseFolder;
         IAddRecordView _view = null;
         IRecordRepository accoutRepo = new RecordRepository();
         IDataRepository dataRepo = new DataRepository();

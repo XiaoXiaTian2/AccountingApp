@@ -13,7 +13,7 @@ namespace AccountingApp.Models.Repositories
 {
     internal class RecordRepository : IRecordRepository
     {
-        private static string baseFolder = @"E:\csharp_course\accounting";
+        private static string baseFolder = AcoountingTargetHelper.BaseFolder;
 
         public bool CreateAccount(RecordModelDAO accountDAO)
         {

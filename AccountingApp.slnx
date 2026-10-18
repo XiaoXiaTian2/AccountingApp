@@ -1,4 +1,4 @@
 <Solution>
-  <Project Path="E:/csharp_course/AccountingApp/AccountingApp.csproj" Id="408a9267-8731-456a-bae0-f1357095d259" />
-  <Project Path="E:/csharp_course/DebounceTime練習/DebounceTime練習.csproj" Id="3dc93053-603a-4a51-a1a8-463bd1326a50" />
+  <Project Path="AccountingApp.csproj" Id="408a9267-8731-456a-bae0-f1357095d259" />
+  <Project Path="CSV/CSV.csproj" Id="0147bd60-04da-4871-b007-d8ec8bafcc0d" />
 </Solution>
